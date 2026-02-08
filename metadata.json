@@ -1,0 +1,5 @@
+{
+  "name": "notepadv1",
+  "description": "A modern, static notes application featuring a glassmorphism UI, rich text editing, and local persistence.",
+  "requestFramePermissions": []
+}

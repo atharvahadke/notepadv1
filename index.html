@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lumina Notes</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
+            },
+            colors: {
+              neon: {
+                cyan: '#00f3ff',
+                pink: '#ff00ff',
+                purple: '#bd00ff',
+                green: '#00ff9d',
+                blue: '#0066ff'
+              },
+              glass: {
+                100: 'rgba(255, 255, 255, 0.03)',
+                200: 'rgba(255, 255, 255, 0.05)',
+                300: 'rgba(255, 255, 255, 0.1)',
+                400: 'rgba(255, 255, 255, 0.15)',
+              }
+            },
+            boxShadow: {
+              'neon-cyan': '0 0 10px rgba(0, 243, 255, 0.5), 0 0 20px rgba(0, 243, 255, 0.3)',
+              'neon-pink': '0 0 10px rgba(255, 0, 255, 0.5), 0 0 20px rgba(255, 0, 255, 0.3)',
+            },
+            animation: {
+              'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+              'glow': 'glow 2s ease-in-out infinite alternate',
+            },
+            keyframes: {
+              glow: {
+                '0%': { boxShadow: '0 0 5px rgba(0, 243, 255, 0.2)' },
+                '100%': { boxShadow: '0 0 20px rgba(0, 243, 255, 0.6), 0 0 10px rgba(0, 243, 255, 0.4)' },
+              }
+            }
+          },
+        },
+      }
+    </script>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Extra Fonts for Editor -->
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Oswald:wght@400;700&family=Playfair+Display:wght@400;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- React Quill CSS -->
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <style>
+      body {
+        background-color: #050505; /* Deepest Black */
+        color: #e5e5e5;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        overflow: hidden;
+      }
+      
+      /* Sleek Scrollbar with Neon Hover */
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #262626;
+        border-radius: 100px;
+        transition: background 0.3s;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #00f3ff;
+        box-shadow: 0 0 10px #00f3ff;
+      }
+      
+      /* Quill Editor Customization */
+      .ql-toolbar.ql-snow {
+        border: none !important;
+        border-bottom: 1px solid rgba(0, 243, 255, 0.1) !important;
+        background: transparent;
+        padding: 16px 24px !important;
+      }
+      .ql-container.ql-snow {
+        border: none !important;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 1.05rem;
+        line-height: 1.75;
+      }
+      .ql-editor {
+        padding: 32px 40px;
+        color: #d4d4d4;
+        min-height: 300px;
+      }
+      .ql-editor.ql-blank::before {
+        color: #525252 !important;
+        font-style: italic !important;
+        left: 40px !important;
+      }
+      
+      /* Quill Icons - Neon Accents */
+      .ql-snow .ql-stroke { stroke: #737373 !important; transition: stroke 0.2s; }
+      .ql-snow .ql-fill { fill: #737373 !important; transition: fill 0.2s; }
+      .ql-snow .ql-picker { color: #737373 !important; }
+      
+      .ql-snow button:hover .ql-stroke { stroke: #00f3ff !important; filter: drop-shadow(0 0 2px #00f3ff); }
+      .ql-snow button:hover .ql-fill { fill: #00f3ff !important; filter: drop-shadow(0 0 2px #00f3ff); }
+      .ql-snow .ql-picker:hover { color: #00f3ff !important; }
+
+      /* ACTIVE STATE HIGHLIGHTING */
+      .ql-snow.ql-toolbar button.ql-active .ql-stroke {
+          stroke: #00f3ff !important;
+          stroke-width: 2.2px;
+          filter: drop-shadow(0 0 3px rgba(0, 243, 255, 0.8));
+      }
+      .ql-snow.ql-toolbar button.ql-active .ql-fill {
+          fill: #00f3ff !important;
+          filter: drop-shadow(0 0 3px rgba(0, 243, 255, 0.8));
+      }
+      .ql-snow.ql-toolbar .ql-picker-label.ql-active {
+          color: #00f3ff !important;
+          font-weight: bold;
+          text-shadow: 0 0 5px rgba(0, 243, 255, 0.5);
+      }
+
+      /* Quill Dropdowns (Pickers) */
+      .ql-picker-options {
+        background-color: #0a0a0a !important;
+        border: 1px solid #00f3ff40 !important;
+        border-radius: 8px !important;
+        box-shadow: 0 0 20px rgba(0, 243, 255, 0.15) !important;
+        padding: 8px !important;
+        z-index: 100 !important;
+      }
+      
+      /* Dropdown Items */
+      .ql-picker-item {
+        color: #a3a3a3 !important;
+        transition: all 0.2s;
+        padding: 4px 8px !important;
+        border-radius: 4px;
+      }
+      .ql-picker-item:hover, .ql-picker-item.ql-selected {
+        color: #fff !important;
+        background: rgba(0, 243, 255, 0.15);
+        transform: translateX(4px);
+        text-shadow: 0 0 8px rgba(0, 243, 255, 0.5);
+      }
+      .ql-picker-label {
+        color: #737373 !important;
+      }
+      .ql-picker-label:hover {
+        color: #00f3ff !important;
+      }
+
+      /* Font Families Configuration */
+      .ql-font-roboto { font-family: 'Roboto', sans-serif; }
+      .ql-font-playfair { font-family: 'Playfair Display', serif; }
+      .ql-font-oswald { font-family: 'Oswald', sans-serif; }
+      .ql-font-courier-prime { font-family: 'Courier Prime', monospace; }
+      
+      /* Selection Color */
+      ::selection {
+        background: rgba(0, 243, 255, 0.3);
+        color: #fff;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@18.3.1/",
+    "react": "https://esm.sh/react@18.3.1",
+    "framer-motion": "https://esm.sh/framer-motion@11.0.8",
+    "lucide-react": "https://esm.sh/lucide-react@0.344.0",
+    "react-dom/": "https://esm.sh/react-dom@18.3.1/",
+    "react-dom": "https://esm.sh/react-dom@18.3.1",
+    "date-fns": "https://esm.sh/date-fns@3.3.1",
+    "uuid": "https://esm.sh/uuid@9.0.1",
+    "react-quill": "https://esm.sh/react-quill@2.0.0-beta.4"
+  }
+}
+</script>
+</head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
