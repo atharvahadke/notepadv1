@@ -1,37 +1,21 @@
 import React, { useState } from 'react';
-import { Lock, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Lock, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface LockScreenProps {
-  isSetupMode: boolean;
   onUnlock: (password: string) => void;
-  onSetPassword: (password: string) => void;
-  onCancelSetup?: () => void;
 }
 
-const LockScreen: React.FC<LockScreenProps> = ({ isSetupMode, onUnlock, onSetPassword, onCancelSetup }) => {
+const LockScreen: React.FC<LockScreenProps> = ({ onUnlock }) => {
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-
-    if (isSetupMode) {
-      if (password.length < 4) {
-        setError('Password must be at least 4 characters');
-        return;
-      }
-      if (password !== confirmPassword) {
-        setError('Passwords do not match');
-        return;
-      }
-      onSetPassword(password);
-    } else {
-      onUnlock(password);
-      setTimeout(() => setError('Incorrect password'), 200);
-    }
+    onUnlock(password);
+    // If onUnlock doesn't unmount this component (due to failure), show error
+    setTimeout(() => setError('ACCESS DENIED: INCORRECT PROTOCOL'), 200);
   };
 
   return (
@@ -54,15 +38,13 @@ const LockScreen: React.FC<LockScreenProps> = ({ isSetupMode, onUnlock, onSetPas
              {/* Rotating border effect */}
              <div className="absolute inset-0 rounded-3xl border border-neon-purple/30 rotate-6 scale-90 transition-transform duration-700 group-hover:rotate-12 group-hover:scale-100"></div>
              
-            {isSetupMode ? <ShieldCheck size={40} className="text-neon-cyan drop-shadow-[0_0_10px_#00f3ff]" /> : <Lock size={40} className="text-neon-pink drop-shadow-[0_0_10px_#ff00ff]" />}
+             <Lock size={40} className="text-neon-pink drop-shadow-[0_0_10px_#ff00ff]" />
           </div>
           <h2 className="text-4xl font-bold text-white mb-3 tracking-tight drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">
-            {isSetupMode ? 'Secure Protocol' : 'Access Control'}
+            System Locked
           </h2>
           <p className="text-neutral-400 text-sm tracking-wide">
-            {isSetupMode 
-              ? 'INITIALIZE MASTER ENCRYPTION KEY' 
-              : 'ENTER SECURITY CREDENTIALS'}
+            ENTER SECURITY CREDENTIALS
           </p>
         </div>
 
@@ -73,31 +55,17 @@ const LockScreen: React.FC<LockScreenProps> = ({ isSetupMode, onUnlock, onSetPas
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder={isSetupMode ? "CREATE PASSCODE" : "ENTER PASSCODE"}
+                placeholder="ENTER PASSCODE"
                 className="w-full bg-black/50 border border-white/10 hover:border-neon-cyan/50 focus:border-neon-cyan text-white px-6 py-5 rounded-2xl focus:outline-none focus:ring-1 focus:ring-neon-cyan/50 transition-all text-center text-2xl placeholder:text-neutral-700 tracking-[0.5em] shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]"
-                autoFocus
+                autoFocus 
                 />
                 <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-[1px] bg-neon-cyan shadow-[0_0_10px_#00f3ff] transition-all duration-300 group-focus-within:w-1/2"></div>
             </div>
-            
-            {isSetupMode && (
-              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}>
-                 <div className="relative group">
-                    <input
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="CONFIRM PASSCODE"
-                    className="w-full bg-black/50 border border-white/10 hover:border-neon-purple/50 focus:border-neon-purple text-white px-6 py-5 rounded-2xl focus:outline-none focus:ring-1 focus:ring-neon-purple/50 transition-all text-center text-2xl placeholder:text-neutral-700 tracking-[0.5em] shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]"
-                    />
-                 </div>
-              </motion.div>
-            )}
           </div>
 
           {error && (
             <p className="text-red-400 text-xs text-center font-bold tracking-widest animate-pulse bg-red-900/10 py-2 rounded-lg border border-red-500/20 shadow-[0_0_10px_rgba(255,0,0,0.2)]">
-                ⚠ {error.toUpperCase()}
+                ⚠ {error}
             </p>
           )}
 
@@ -105,19 +73,9 @@ const LockScreen: React.FC<LockScreenProps> = ({ isSetupMode, onUnlock, onSetPas
             type="submit"
             className="group w-full bg-white text-black hover:bg-neon-cyan hover:text-black font-bold py-5 rounded-2xl transition-all flex items-center justify-center gap-3 mt-6 shadow-[0_0_20px_-5px_rgba(255,255,255,0.2)] hover:shadow-[0_0_30px_-5px_#00f3ff] hover:scale-[1.01] active:scale-[0.99] relative overflow-hidden"
           >
-            <span className="relative z-10 tracking-wider text-sm">{isSetupMode ? 'ENGAGE PROTOCOL' : 'UNLOCK SYSTEM'}</span>
+            <span className="relative z-10 tracking-wider text-sm">UNLOCK SYSTEM</span>
             <ArrowRight size={20} className="relative z-10 group-hover:translate-x-1 transition-transform" />
           </button>
-          
-          {isSetupMode && onCancelSetup && (
-             <button
-             type="button"
-             onClick={onCancelSetup}
-             className="w-full text-neutral-600 hover:text-neon-cyan py-2 transition-colors text-xs font-medium tracking-widest"
-           >
-             ABORT SETUP
-           </button>
-          )}
         </form>
       </motion.div>
     </div>
