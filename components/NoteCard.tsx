@@ -28,24 +28,24 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, isActive, onClick, onDelete, 
       className={`
         group relative w-full p-4 mb-3 rounded-xl cursor-pointer transition-all duration-300 border
         ${isActive 
-          ? 'bg-gradient-to-br from-neon-cyan/10 to-neon-purple/5 border-neon-cyan/50 shadow-[0_0_20px_-5px_rgba(0,243,255,0.15)]' 
+          ? 'bg-gradient-to-br from-[#00f3ff]/10 to-[#bd00ff]/5 border-[#00f3ff]/50 shadow-[0_0_20px_-5px_rgba(0,243,255,0.15)]' 
           : 'bg-white/5 border-transparent hover:border-white/10 hover:shadow-lg'
         }
       `}
     >
       {isActive && (
-        <div className="absolute left-0 top-3 bottom-3 w-1 rounded-r-full bg-neon-cyan shadow-[0_0_10px_#00f3ff]"></div>
+        <div className="absolute left-0 top-3 bottom-3 w-1 rounded-r-full bg-[#00f3ff] shadow-[0_0_10px_#00f3ff]"></div>
       )}
       
       <div className="flex justify-between items-start mb-2 pl-2">
         <h3 className={`font-semibold text-sm truncate pr-4 flex items-center gap-2 ${isActive ? 'text-white' : 'text-neutral-300 group-hover:text-white transition-colors'}`}>
-          {note.isPinned && <Star size={12} className="fill-neon-pink text-neon-pink drop-shadow-[0_0_5px_rgba(255,0,255,0.8)]" />}
+          {note.isPinned && <Star size={12} className="fill-[#ff00ff] text-[#ff00ff] drop-shadow-[0_0_5px_rgba(255,0,255,0.8)]" />}
           {note.title || <span className="italic opacity-50">Untitled Note</span>}
         </h3>
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
            <button
             onClick={onPin}
-            className={`p-1.5 rounded-lg hover:bg-white/10 transition-colors ${note.isPinned ? 'text-neon-pink' : 'text-neutral-500 hover:text-neon-pink'}`}
+            className={`p-1.5 rounded-lg hover:bg-white/10 transition-colors ${note.isPinned ? 'text-[#ff00ff]' : 'text-neutral-500 hover:text-[#ff00ff]'}`}
             title={note.isPinned ? "Unpin Note" : "Pin Note"}
           >
             <Star size={13} className={note.isPinned ? "fill-current" : ""} />
@@ -71,7 +71,7 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, isActive, onClick, onDelete, 
         {note.tags.length > 0 && (
           <div className="flex gap-1">
             {note.tags.slice(0, 2).map(tag => (
-              <span key={tag} className={`text-[10px] px-2 py-0.5 rounded-md border ${isActive ? 'bg-neon-cyan/10 border-neon-cyan/20 text-neon-cyan' : 'bg-black/30 border-white/5 text-neutral-500'}`}>
+              <span key={tag} className={`text-[10px] px-2 py-0.5 rounded-md border ${isActive ? 'bg-[#00f3ff]/10 border-[#00f3ff]/20 text-[#00f3ff]' : 'bg-black/30 border-white/5 text-neutral-500'}`}>
                 #{tag}
               </span>
             ))}
