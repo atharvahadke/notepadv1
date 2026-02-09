@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Note } from '../types';
 import NoteCard from './NoteCard';
-import { Search, Plus, Download, FileText, Lock, ShieldCheck, Zap } from 'lucide-react';
+import { Search, Plus, Download, Zap } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface SidebarProps {
@@ -12,8 +12,6 @@ interface SidebarProps {
   onDeleteNote: (id: string) => void;
   onPinNote: (id: string) => void;
   onDownload: () => void;
-  onLockApp: () => void;
-  hasPassword: boolean;
   isOpen: boolean;
 }
 
@@ -25,8 +23,6 @@ const Sidebar: React.FC<SidebarProps> = ({
   onDeleteNote,
   onPinNote,
   onDownload,
-  onLockApp,
-  hasPassword,
   isOpen
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -136,14 +132,6 @@ const Sidebar: React.FC<SidebarProps> = ({
         >
           <Download size={14} />
           Export
-        </button>
-        <button
-          onClick={onLockApp}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-xs font-medium transition-all border border-transparent hover:border-white/5 ${hasPassword ? 'text-neon-cyan/80 hover:text-neon-cyan hover:bg-neon-cyan/5' : 'text-neutral-500 hover:text-white hover:bg-white/5'}`}
-          title={hasPassword ? "Lock App" : "Set Password"}
-        >
-          {hasPassword ? <Lock size={14} /> : <ShieldCheck size={14} />}
-          {hasPassword ? "Lock" : "Secure"}
         </button>
       </div>
     </aside>
