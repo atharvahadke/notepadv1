@@ -19,7 +19,7 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ 
-  notes, 
+  notes = [], 
   activeNoteId, 
   onSelectNote, 
   onCreateNote, 
@@ -32,11 +32,14 @@ const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredNotes = notes
+  // Ensure notes is an array to prevent crashes
+  const safeNotes = Array.isArray(notes) ? notes : [];
+
+  const filteredNotes = safeNotes
     .filter(note => 
       note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       note.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      note.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+      (note.tags && note.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())))
     )
     .sort((a, b) => {
       // Sort by pinned first
@@ -96,7 +99,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       {/* Note List */}
       <div className="flex-1 overflow-y-auto px-4 py-2 mt-2 space-y-2 custom-scrollbar">
         <AnimatePresence mode="popLayout">
-          {filteredNotes.length > 0 ? (
+          {safeNotes.length > 0 ? (
             filteredNotes.map(note => (
               <NoteCard
                 key={note.id}
