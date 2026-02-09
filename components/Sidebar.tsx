@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Note } from '../types';
 import NoteCard from './NoteCard';
-import { Search, Plus, Download, Lock, Zap } from 'lucide-react';
+import { Search, Plus, Download, Lock, Zap, Github } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface SidebarProps {
@@ -128,6 +128,15 @@ const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Footer */}
       <div className="p-4 border-t border-white/5 bg-black/40 flex gap-2 backdrop-blur-md relative z-10">
+        <a
+          href="https://github.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center p-2.5 rounded-lg text-neutral-500 hover:text-white hover:bg-white/5 transition-all border border-transparent hover:border-white/5"
+          title="View on GitHub"
+        >
+          <Github size={18} />
+        </a>
         <button
           onClick={onDownload}
           className="flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-xs font-medium text-neutral-500 hover:text-white hover:bg-white/5 transition-all border border-transparent hover:border-white/5"
