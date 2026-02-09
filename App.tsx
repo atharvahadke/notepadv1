@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import Editor from './components/Editor';
 import LockScreen from './components/LockScreen';
-import { loadNotes, saveNotes, exportData, hardReset, verifyPassword, setAppUnlocked, isAppUnlocked, lockAppSession } from './services/storageService';
+import { loadNotes, saveNotes, downloadNotesJSON, getStoredPassword, setStoredPassword, verifyPassword, setAppUnlocked, isAppUnlocked } from './services/storageService';
 import { Note } from './types';
 import { Menu } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
@@ -15,22 +15,29 @@ const App: React.FC = () => {
   
   // Lock State
   const [isLocked, setIsLocked] = useState(false);
+  const [hasPassword, setHasPassword] = useState(false);
+  const [showPasswordSetup, setShowPasswordSetup] = useState(false);
 
   // Focus Mode
   const [isFocusMode, setIsFocusMode] = useState(false);
 
   // Initialize data and lock state
   useEffect(() => {
-    // Check Session Lock - If session flag is missing, we lock.
-    if (!isAppUnlocked()) {
-      setIsLocked(true);
-    }
-
     // Load Notes
     const loadedNotes = loadNotes();
     setNotes(loadedNotes);
     if (loadedNotes.length > 0) {
       setActiveNoteId(loadedNotes[0].id);
+    }
+
+    // Check Password & Session
+    const storedPwd = getStoredPassword();
+    if (storedPwd) {
+      setHasPassword(true);
+      // Only lock if we haven't unlocked in this session
+      if (!isAppUnlocked()) {
+        setIsLocked(true);
+      }
     }
 
     setIsLoaded(true);
@@ -86,22 +93,38 @@ const App: React.FC = () => {
 
   // Lock Logic
   const handleLockApp = () => {
-    lockAppSession(); // Clear session flag
-    setIsLocked(true);
+    if (hasPassword) {
+      // Manual lock: clear session to force re-entry
+      sessionStorage.removeItem('lumina_session_unlocked');
+      setIsLocked(true);
+    } else {
+      setShowPasswordSetup(true);
+    }
   };
 
   const handleUnlock = (password: string) => {
     if (verifyPassword(password)) {
       setAppUnlocked(); // Set session flag
       setIsLocked(false);
+    } else {
+      // Error handled in LockScreen
     }
+  };
+
+  const handleSetPassword = (password: string) => {
+    setStoredPassword(password);
+    setHasPassword(true);
+    setAppUnlocked(); // Implicitly unlock for this session
+    setShowPasswordSetup(false);
   };
 
   // Render Logic
   if (isLocked) {
     return (
       <LockScreen 
+        isSetupMode={false} 
         onUnlock={handleUnlock} 
+        onSetPassword={() => {}} 
       />
     );
   }
@@ -109,6 +132,15 @@ const App: React.FC = () => {
   return (
     <div className="flex h-screen w-full bg-black text-white overflow-hidden font-sans">
       
+      {showPasswordSetup && (
+        <LockScreen 
+          isSetupMode={true} 
+          onUnlock={() => {}} 
+          onSetPassword={handleSetPassword} 
+          onCancelSetup={() => setShowPasswordSetup(false)}
+        />
+      )}
+
       {/* Mobile Menu Button */}
       <button 
         className={`md:hidden fixed top-4 left-4 z-50 p-2 bg-neutral-900 rounded-lg text-white shadow-lg border border-neutral-800 ${isFocusMode ? 'hidden' : ''}`}
@@ -138,10 +170,9 @@ const App: React.FC = () => {
             onCreateNote={handleCreateNote}
             onDeleteNote={handleDeleteNote}
             onPinNote={handlePinNote}
-            onDownload={() => exportData(notes)}
+            onDownload={() => downloadNotesJSON(notes)}
             onLockApp={handleLockApp}
-            onHardReset={hardReset}
-            hasPassword={true} // Always true as we have default password
+            hasPassword={hasPassword}
             isOpen={isSidebarOpen}
           />
         </div>
