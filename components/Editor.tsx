@@ -89,13 +89,13 @@ const Editor: React.FC<EditorProps> = ({ note, onUpdate, isFocusMode, toggleFocu
   return (
     <div className="flex flex-col h-full bg-[#050505] overflow-hidden relative">
       {/* Background neon glow */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#bd00ff]/5 rounded-full blur-[120px] pointer-events-none"></div>
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-neon-purple/5 rounded-full blur-[120px] pointer-events-none"></div>
 
       {/* Top Controls */}
       <div className="absolute top-6 right-8 z-20 flex gap-2">
          <button 
            onClick={toggleFocusMode}
-           className="p-2.5 bg-black/40 hover:bg-[#00f3ff]/10 border border-white/10 hover:border-[#00f3ff]/50 rounded-xl text-neutral-400 hover:text-[#00f3ff] transition-all backdrop-blur-sm shadow-[0_0_10px_rgba(0,0,0,0.5)]"
+           className="p-2.5 bg-black/40 hover:bg-neon-cyan/10 border border-white/10 hover:border-neon-cyan/50 rounded-xl text-neutral-400 hover:text-neon-cyan transition-all backdrop-blur-sm shadow-[0_0_10px_rgba(0,0,0,0.5)]"
            title={isFocusMode ? "Exit Focus Mode" : "Focus Mode"}
          >
            {isFocusMode ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
@@ -109,22 +109,22 @@ const Editor: React.FC<EditorProps> = ({ note, onUpdate, isFocusMode, toggleFocu
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Untitled Note"
-          className="w-full bg-transparent text-4xl font-bold text-white placeholder-neutral-700 focus:outline-none mb-6 pr-16 border-l-4 border-transparent focus:border-[#00f3ff] pl-0 focus:pl-4 transition-all duration-300"
+          className="w-full bg-transparent text-4xl font-bold text-white placeholder-neutral-700 focus:outline-none mb-6 pr-16 border-l-4 border-transparent focus:border-neon-cyan pl-0 focus:pl-4 transition-all duration-300"
         />
         
         <div className="flex flex-wrap items-center gap-3 text-xs text-neutral-400 font-medium">
-          <div className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-full border border-white/5 hover:border-[#bd00ff]/30 transition-colors">
-            <Calendar size={12} className="text-[#bd00ff]" />
+          <div className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-full border border-white/5 hover:border-neon-purple/30 transition-colors">
+            <Calendar size={12} className="text-neon-purple" />
             <span>{format(new Date(note.createdAt), 'MMM d, yyyy')}</span>
           </div>
           
-          <div className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-full border border-white/5 hover:border-[#ff00ff]/30 transition-colors">
-            <Type size={12} className="text-[#ff00ff]" />
+          <div className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-full border border-white/5 hover:border-neon-pink/30 transition-colors">
+            <Type size={12} className="text-neon-pink" />
             <span>{stats.wordCount} words</span>
           </div>
           
-          <div className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-full border border-white/5 flex-1 min-w-[200px] hover:border-[#00f3ff]/30 transition-colors focus-within:border-[#00f3ff]/50 focus-within:shadow-[0_0_10px_rgba(0,243,255,0.1)]">
-            <Tag size={12} className="text-[#00f3ff]" />
+          <div className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-full border border-white/5 flex-1 min-w-[200px] hover:border-neon-cyan/30 transition-colors focus-within:border-neon-cyan/50 focus-within:shadow-[0_0_10px_rgba(0,243,255,0.1)]">
+            <Tag size={12} className="text-neon-cyan" />
             <input
               type="text"
               value={tags}
@@ -134,8 +134,8 @@ const Editor: React.FC<EditorProps> = ({ note, onUpdate, isFocusMode, toggleFocu
             />
           </div>
 
-          <div className={`flex items-center gap-2 text-[#00ff9d] transition-all duration-500 ${isSaving ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4'}`}>
-            <div className="w-1.5 h-1.5 rounded-full bg-[#00ff9d] shadow-[0_0_5px_#00ff9d] animate-pulse"></div>
+          <div className={`flex items-center gap-2 text-neon-green transition-all duration-500 ${isSaving ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4'}`}>
+            <div className="w-1.5 h-1.5 rounded-full bg-neon-green shadow-[0_0_5px_#00ff9d] animate-pulse"></div>
             <span className="drop-shadow-[0_0_5px_rgba(0,255,157,0.5)]">Saved</span>
           </div>
         </div>
