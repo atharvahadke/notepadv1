@@ -1,46 +1,29 @@
 import { Note } from '../types';
 import { initialNotes } from '../data/initialData';
 
-const STORAGE_KEY = 'lumina_notes_data_v1';
-const LOCK_KEY = 'lumina_app_lock_pwd';
-const SESSION_UNLOCK_KEY = 'lumina_session_unlocked';
+// We no longer use localStorage for notes or locking.
+// The app is ephemeral: loads from initialData on refresh,
+// and updates are kept in memory only during the session.
 
 /**
- * Loads notes from LocalStorage if available, otherwise falls back to the static data.
- * This simulates a "load" from the file system on first run.
+ * Loads notes from the static JSON file (initialData).
+ * Always resets to initial state on reload.
  */
 export const loadNotes = (): Note[] => {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      return JSON.parse(stored);
-    }
-    // If no local storage data, return the static initial data
-    const notes = initialNotes;
-    // Save to local storage immediately so subsequent edits are saved
-    saveNotes(notes);
-    return notes;
-  } catch (error) {
-    console.error("Failed to load notes", error);
-    return [];
-  }
+  // Deep copy to prevent mutating the original import
+  return JSON.parse(JSON.stringify(initialNotes));
 };
 
 /**
- * Saves the current state of notes to LocalStorage.
- * In a real node app, this would write to the file system.
+ * No-op: We do not persist updates to the browser storage.
  */
 export const saveNotes = (notes: Note[]): void => {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
-  } catch (error) {
-    console.error("Failed to save notes", error);
-  }
+  // Intentionally empty
 };
 
 /**
  * Utility to download the current notes as a JSON file.
- * Allows the user to manually "save" the file since we can't write to disk.
+ * This is the only way to "save" data in this configuration.
  */
 export const downloadNotesJSON = (notes: Note[]) => {
   const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(notes, null, 2));
@@ -50,33 +33,4 @@ export const downloadNotesJSON = (notes: Note[]) => {
   document.body.appendChild(downloadAnchorNode);
   downloadAnchorNode.click();
   downloadAnchorNode.remove();
-};
-
-// --- App Lock Services ---
-
-export const getStoredPassword = (): string | null => {
-  return localStorage.getItem(LOCK_KEY);
-};
-
-export const setStoredPassword = (password: string): void => {
-  localStorage.setItem(LOCK_KEY, password); // In a real app, hash this!
-};
-
-export const removeStoredPassword = (): void => {
-  localStorage.removeItem(LOCK_KEY);
-};
-
-export const verifyPassword = (input: string): boolean => {
-  const stored = getStoredPassword();
-  return stored === input;
-};
-
-// --- Session Management ---
-
-export const setAppUnlocked = () => {
-  sessionStorage.setItem(SESSION_UNLOCK_KEY, 'true');
-};
-
-export const isAppUnlocked = (): boolean => {
-  return sessionStorage.getItem(SESSION_UNLOCK_KEY) === 'true';
 };
