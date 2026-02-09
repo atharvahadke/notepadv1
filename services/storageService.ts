@@ -5,6 +5,18 @@ const STORAGE_KEY = 'lumina_notes_data_v1';
 const SESSION_UNLOCK_KEY = 'lumina_session_unlocked';
 const DEFAULT_PASSWORD = '2301';
 
+// Fallback data in case import fails or data is corrupted
+const FALLBACK_NOTES: Note[] = [
+  {
+    "id": "1",
+    "title": "Welcome to Lumina Notes",
+    "content": "<h1>Welcome!</h1><p>This is a <strong>modern</strong>, static notes application designed with focus and aesthetics in mind.</p><p><br></p><h3>Features:</h3><ul><li>Glassmorphism UI</li><li>Rich Text Editing</li><li>Local Persistence</li><li>Fast Search</li></ul><p><br></p><p>Try editing this note or create a new one!</p>",
+    "createdAt": new Date().toISOString(),
+    "updatedAt": new Date().toISOString(),
+    "tags": ["welcome", "info"]
+  }
+];
+
 /**
  * Loads notes from LocalStorage if available, otherwise falls back to the static data.
  * This simulates a "load" from the file system on first run.
@@ -13,16 +25,22 @@ export const loadNotes = (): Note[] => {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
-      return JSON.parse(stored);
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed)) {
+        return parsed;
+      }
     }
-    // If no local storage data, return the static initial data
-    const notes = initialNotes;
+    
+    // If no local storage data, return the static initial data.
+    // We add a check to ensure initialNotes is valid.
+    const notes = (initialNotes && Array.isArray(initialNotes)) ? initialNotes : FALLBACK_NOTES;
+    
     // Save to local storage immediately so subsequent edits are saved
     saveNotes(notes);
     return notes;
   } catch (error) {
     console.error("Failed to load notes", error);
-    return [];
+    return FALLBACK_NOTES;
   }
 };
 
