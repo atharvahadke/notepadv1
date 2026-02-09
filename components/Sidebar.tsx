@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Note } from '../types';
 import NoteCard from './NoteCard';
-import { Search, Plus, Download, Lock, Zap, Github } from 'lucide-react';
+import { Search, Plus, Download, Lock, Zap, Github, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface SidebarProps {
@@ -13,6 +13,7 @@ interface SidebarProps {
   onPinNote: (id: string) => void;
   onDownload: () => void;
   onLockApp: () => void;
+  onHardReset: () => void;
   hasPassword: boolean;
   isOpen: boolean;
 }
@@ -26,6 +27,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   onPinNote,
   onDownload,
   onLockApp,
+  onHardReset,
   isOpen
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -138,9 +140,16 @@ const Sidebar: React.FC<SidebarProps> = ({
           <Github size={18} />
         </a>
         <button
+          onClick={onHardReset}
+          className="flex items-center justify-center p-2.5 rounded-lg text-neutral-500 hover:text-red-400 hover:bg-red-500/10 transition-all border border-transparent hover:border-red-500/20"
+          title="Hard Reset (Restore Default Data)"
+        >
+          <RefreshCw size={18} />
+        </button>
+        <button
           onClick={onDownload}
           className="flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-xs font-medium text-neutral-500 hover:text-white hover:bg-white/5 transition-all border border-transparent hover:border-white/5"
-          title="Export JSON"
+          title="Export JSON & Source"
         >
           <Download size={14} />
           Export
