@@ -1,101 +1,173 @@
-import { Note } from '../types';
-import { initialNotes } from '../data/initialData';
+import React, { useState, useEffect } from 'react';
+import Sidebar from './components/Sidebar';
+import Editor from './components/Editor';
+import LockScreen from './components/LockScreen';
+import { loadNotes, saveNotes, exportData, hardReset, verifyPassword, setAppUnlocked, isAppUnlocked, lockAppSession } from './services/storageService';
+import { Note } from './types';
+import { Menu } from 'lucide-react';
+import { v4 as uuidv4 } from 'uuid';
 
-const STORAGE_KEY = 'lumina_notes_data_v1';
-const SESSION_UNLOCK_KEY = 'lumina_session_unlocked';
-const DEFAULT_PASSWORD = '2301';
+const App: React.FC = () => {
+  const [notes, setNotes] = useState<Note[]>([]);
+  const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
+  
+  // Lock State
+  const [isLocked, setIsLocked] = useState(false);
 
-/**
- * Loads notes from LocalStorage if available, otherwise falls back to the static data.
- * This simulates a "load" from the file system on first run.
- */
-export const loadNotes = (): Note[] => {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      return JSON.parse(stored);
+  // Focus Mode
+  const [isFocusMode, setIsFocusMode] = useState(false);
+
+  // Initialize data and lock state
+  useEffect(() => {
+    // Check Session Lock - If session flag is missing, we lock.
+    if (!isAppUnlocked()) {
+      setIsLocked(true);
     }
-    // If no local storage data, return the static initial data
-    const notes = initialNotes;
-    // Save to local storage immediately so subsequent edits are saved
-    saveNotes(notes);
-    return notes;
-  } catch (error) {
-    console.error("Failed to load notes", error);
-    return [];
+
+    // Load Notes
+    const loadedNotes = loadNotes();
+    setNotes(loadedNotes);
+    if (loadedNotes.length > 0) {
+      setActiveNoteId(loadedNotes[0].id);
+    }
+
+    setIsLoaded(true);
+  }, []);
+
+  // Save on changes
+  useEffect(() => {
+    if (isLoaded) {
+      saveNotes(notes);
+    }
+  }, [notes, isLoaded]);
+
+  const handleCreateNote = () => {
+    const newNote: Note = {
+      id: uuidv4(),
+      title: '',
+      content: '',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      tags: [],
+      isPinned: false
+    };
+    
+    setNotes(prev => [newNote, ...prev]);
+    setActiveNoteId(newNote.id);
+    // On mobile, close sidebar when creating new note
+    if (window.innerWidth < 768) {
+        setIsSidebarOpen(false);
+    }
+  };
+
+  const handleDeleteNote = (id: string) => {
+    if (confirm('Are you sure you want to delete this note?')) {
+      const newNotes = notes.filter(n => n.id !== id);
+      setNotes(newNotes);
+      if (activeNoteId === id) {
+        setActiveNoteId(newNotes.length > 0 ? newNotes[0].id : null);
+      }
+    }
+  };
+
+  const handlePinNote = (id: string) => {
+    setNotes(prev => prev.map(n => 
+      n.id === id ? { ...n, isPinned: !n.isPinned } : n
+    ));
+  };
+
+  const handleUpdateNote = (updatedNote: Note) => {
+    setNotes(prev => prev.map(n => n.id === updatedNote.id ? updatedNote : n));
+  };
+
+  const getActiveNote = () => notes.find(n => n.id === activeNoteId);
+
+  // Lock Logic
+  const handleLockApp = () => {
+    lockAppSession(); // Clear session flag
+    setIsLocked(true);
+  };
+
+  const handleUnlock = (password: string) => {
+    if (verifyPassword(password)) {
+      setAppUnlocked(); // Set session flag
+      setIsLocked(false);
+    }
+  };
+
+  // Render Logic
+  if (isLocked) {
+    return (
+      <LockScreen 
+        onUnlock={handleUnlock} 
+      />
+    );
   }
+
+  return (
+    <div className="flex h-screen w-full bg-black text-white overflow-hidden font-sans">
+      
+      {/* Mobile Menu Button */}
+      <button 
+        className={`md:hidden fixed top-4 left-4 z-50 p-2 bg-neutral-900 rounded-lg text-white shadow-lg border border-neutral-800 ${isFocusMode ? 'hidden' : ''}`}
+        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+      >
+        <Menu size={20} />
+      </button>
+
+      {/* Overlay for mobile sidebar */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/80 z-30 md:hidden backdrop-blur-sm"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar - Hidden in Focus Mode */}
+      {!isFocusMode && (
+        <div className="h-full flex-shrink-0">
+          <Sidebar
+            notes={notes}
+            activeNoteId={activeNoteId}
+            onSelectNote={(id) => {
+              setActiveNoteId(id);
+              setIsSidebarOpen(false);
+            }}
+            onCreateNote={handleCreateNote}
+            onDeleteNote={handleDeleteNote}
+            onPinNote={handlePinNote}
+            onDownload={() => exportData(notes)}
+            onLockApp={handleLockApp}
+            onHardReset={hardReset}
+            hasPassword={true} // Always true as we have default password
+            isOpen={isSidebarOpen}
+          />
+        </div>
+      )}
+
+      <main className="flex-1 h-full relative z-0 bg-black min-w-0">
+        {activeNoteId && getActiveNote() ? (
+          <Editor 
+            note={getActiveNote()!} 
+            onUpdate={handleUpdateNote} 
+            isFocusMode={isFocusMode}
+            toggleFocusMode={() => setIsFocusMode(!isFocusMode)}
+          />
+        ) : (
+          <div className="flex flex-col items-center justify-center h-full text-neutral-600 p-8 text-center opacity-50">
+            <div className="w-16 h-16 mb-4 rounded-2xl bg-neutral-900 flex items-center justify-center border border-neutral-800">
+              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+            </div>
+            <p className="text-lg font-medium">Select a note or create a new one</p>
+          </div>
+        )}
+      </main>
+    </div>
+  );
 };
 
-/**
- * Saves the current state of notes to LocalStorage.
- * In a real node app, this would write to the file system.
- */
-export const saveNotes = (notes: Note[]): void => {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
-  } catch (error) {
-    console.error("Failed to save notes", error);
-  }
-};
-
-/**
- * Resets the application to its factory state by clearing local storage
- * and reloading the page to fetch initialData from code.
- */
-export const hardReset = () => {
-  if (window.confirm("FACTORY RESET: All local changes will be deleted and default data restored. This cannot be undone. Proceed?")) {
-    localStorage.removeItem(STORAGE_KEY);
-    window.location.reload();
-  }
-};
-
-/**
- * Downloads both notes.json and a reconstructed initialData.ts
- */
-export const exportData = (notes: Note[]) => {
-  const jsonContent = JSON.stringify(notes, null, 2);
-  
-  // 1. Download notes.json
-  downloadFile(jsonContent, 'notes.json', 'application/json');
-
-  // 2. Download initialData.ts (formatted as source code)
-  // We reconstruct the file content to match the structure of data/initialData.ts
-  const tsContent = `import { Note } from '../types';\n\nexport const initialNotes: Note[] = ${jsonContent};\n`;
-  
-  // Use a small timeout to prevent browser blocking the second download
-  setTimeout(() => {
-    downloadFile(tsContent, 'initialData.ts', 'text/plain');
-  }, 500);
-};
-
-const downloadFile = (content: string, fileName: string, mimeType: string) => {
-  const blob = new Blob([content], { type: mimeType });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = fileName;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-};
-
-// --- App Lock Services ---
-
-export const verifyPassword = (input: string): boolean => {
-  return input === DEFAULT_PASSWORD;
-};
-
-// --- Session Management ---
-
-export const setAppUnlocked = () => {
-  sessionStorage.setItem(SESSION_UNLOCK_KEY, 'true');
-};
-
-export const isAppUnlocked = (): boolean => {
-  return sessionStorage.getItem(SESSION_UNLOCK_KEY) === 'true';
-};
-
-export const lockAppSession = () => {
-  sessionStorage.removeItem(SESSION_UNLOCK_KEY);
-}
+export default App;
