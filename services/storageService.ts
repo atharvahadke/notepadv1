@@ -2,8 +2,8 @@ import { Note } from '../types';
 import { initialNotes } from '../data/initialData';
 
 const STORAGE_KEY = 'lumina_notes_data_v1';
-const LOCK_KEY = 'lumina_app_lock_pwd';
 const SESSION_UNLOCK_KEY = 'lumina_session_unlocked';
+const DEFAULT_PASSWORD = '2301';
 
 /**
  * Loads notes from LocalStorage if available, otherwise falls back to the static data.
@@ -39,36 +39,51 @@ export const saveNotes = (notes: Note[]): void => {
 };
 
 /**
- * Utility to download the current notes as a JSON file.
- * Allows the user to manually "save" the file since we can't write to disk.
+ * Resets the application to its factory state by clearing local storage
+ * and reloading the page to fetch initialData from code.
  */
-export const downloadNotesJSON = (notes: Note[]) => {
-  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(notes, null, 2));
-  const downloadAnchorNode = document.createElement('a');
-  downloadAnchorNode.setAttribute("href", dataStr);
-  downloadAnchorNode.setAttribute("download", "notes.json");
-  document.body.appendChild(downloadAnchorNode);
-  downloadAnchorNode.click();
-  downloadAnchorNode.remove();
+export const hardReset = () => {
+  if (window.confirm("FACTORY RESET: All local changes will be deleted and default data restored. This cannot be undone. Proceed?")) {
+    localStorage.removeItem(STORAGE_KEY);
+    window.location.reload();
+  }
+};
+
+/**
+ * Downloads both notes.json and a reconstructed initialData.ts
+ */
+export const exportData = (notes: Note[]) => {
+  const jsonContent = JSON.stringify(notes, null, 2);
+  
+  // 1. Download notes.json
+  downloadFile(jsonContent, 'notes.json', 'application/json');
+
+  // 2. Download initialData.ts (formatted as source code)
+  // We reconstruct the file content to match the structure of data/initialData.ts
+  const tsContent = `import { Note } from '../types';\n\nexport const initialNotes: Note[] = ${jsonContent};\n`;
+  
+  // Use a small timeout to prevent browser blocking the second download
+  setTimeout(() => {
+    downloadFile(tsContent, 'initialData.ts', 'text/plain');
+  }, 500);
+};
+
+const downloadFile = (content: string, fileName: string, mimeType: string) => {
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 };
 
 // --- App Lock Services ---
 
-export const getStoredPassword = (): string | null => {
-  return localStorage.getItem(LOCK_KEY);
-};
-
-export const setStoredPassword = (password: string): void => {
-  localStorage.setItem(LOCK_KEY, password); // In a real app, hash this!
-};
-
-export const removeStoredPassword = (): void => {
-  localStorage.removeItem(LOCK_KEY);
-};
-
 export const verifyPassword = (input: string): boolean => {
-  const stored = getStoredPassword();
-  return stored === input;
+  return input === DEFAULT_PASSWORD;
 };
 
 // --- Session Management ---
@@ -80,3 +95,7 @@ export const setAppUnlocked = () => {
 export const isAppUnlocked = (): boolean => {
   return sessionStorage.getItem(SESSION_UNLOCK_KEY) === 'true';
 };
+
+export const lockAppSession = () => {
+  sessionStorage.removeItem(SESSION_UNLOCK_KEY);
+}
